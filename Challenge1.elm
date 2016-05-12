@@ -36,7 +36,9 @@ type alias Model =
 
 init : (Model, Cmd Msg)
 init =
-    (Model True (Position 0 0) (Size 0 0), Task.perform Fail SetWindowSize Window.size)
+    ( Model True (Position 0 0) (Size 0 0)
+    , Task.perform Fail SetWindowSize Window.size
+    )
 
 
 -- Update
@@ -44,7 +46,6 @@ init =
 
 type Msg
   = SetMousePosition Position
-  | GetWindowSize
   | SetWindowSize Size
   | Fail ()
 
@@ -56,9 +57,6 @@ update msg model =
       ({ model | position = xy
       , isLeft = isLeft model
       }, Cmd.none)
-
-    GetWindowSize ->
-      (model, Task.perform Fail SetWindowSize Window.size)
 
     SetWindowSize size ->
           ({ model | windowSize = size
@@ -79,7 +77,7 @@ isLeft { position, windowSize } =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-  Sub.none
+  Window.resizes SetWindowSize
 
 
 -- View
@@ -89,13 +87,10 @@ view : Model -> Html Msg
 view model =
   let (centreText, color) = getDetails model
   in
-    div
+    body
       [ onMouseMove
-      , onResize
       , style
-        [ "width" => "100%"
-        , "height" => "100%"
-        , "background-color" => color
+        [ "background-color" => color
         , "display" => "flex"
         , "align-items" => "center"
         , "justify-content" => "center"
@@ -134,11 +129,6 @@ getDetails { isLeft } =
     ("Left", red)
   else
     ("Right", blue)
-
-
-onResize : Attribute Msg
-onResize =
-  on "resize" (Json.succeed GetWindowSize)
 
 
 onMouseMove : Attribute Msg
