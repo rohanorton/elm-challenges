@@ -6,8 +6,15 @@ import Html.Events exposing (on)
 import Html.App as Html
 import Json.Decode as Json
 import Mouse exposing (Position)
+import Window exposing (Size)
+import Task
 
 
+debug : Bool
+debug = False
+
+
+main : Program Never
 main =
   Html.program
     { init = init
@@ -23,12 +30,13 @@ main =
 type alias Model =
   { isLeft : Bool
   , position : Position
+  , windowSize : Size
   }
 
 
 init : (Model, Cmd Msg)
 init =
-    (Model False (Position 0 0), Cmd.none)
+    (Model True (Position 0 0) (Size 0 0), Task.perform Fail SetWindowSize Window.size)
 
 
 -- Update
@@ -36,13 +44,34 @@ init =
 
 type Msg
   = SetMousePosition Position
+  | GetWindowSize
+  | SetWindowSize Size
+  | Fail ()
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     SetMousePosition xy ->
-      ({ model | position = xy }, Cmd.none)
+      ({ model | position = xy
+      , isLeft = isLeft model
+      }, Cmd.none)
+
+    GetWindowSize ->
+      (model, Task.perform Fail SetWindowSize Window.size)
+
+    SetWindowSize size ->
+          ({ model | windowSize = size
+          , isLeft = isLeft model
+          }, Cmd.none)
+
+    Fail () ->
+      (model, Cmd.none)
+
+
+isLeft : Model -> Bool
+isLeft { position, windowSize } =
+  (windowSize.width // 2) - position.x > 0
 
 
 -- Subscriptions
@@ -58,34 +87,71 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-  div
-    [ onMouseMove
-    , style
-      [ "width" => "100%"
-      , "height" => "100%"
-      , "background-color" => "#000"
-      , "display" => "flex"
-      , "align-items" => "center"
-      , "justify-content" => "center"
+  let (centreText, color) = getDetails model
+  in
+    div
+      [ onMouseMove
+      , onResize
+      , style
+        [ "width" => "100%"
+        , "height" => "100%"
+        , "background-color" => color
+        , "display" => "flex"
+        , "align-items" => "center"
+        , "justify-content" => "center"
+        ]
       ]
-    ]
-    [ h1
-       [ style
-         [ "color" => "#AAA"
-         , "font-family" => "Sans-Serif"
+      [ h1
+         [ style
+           [ "color" => "#AAA"
+           , "font-family" => "Sans-Serif"
+           ]
          ]
+         [ text centreText ]
+       , debugger model
        ]
-       [ text (centerText model) ]
-     ]
 
 
-centerText : Model -> String
-centerText model =
-  toString model.position
+debugger : Model -> Html msg
+debugger model =
+  if debug then
+    p
+      [ style
+        [ "color" => "#AAA"
+        , "font-family" => "Sans-Serif"
+        , "position" => "fixed"
+        ]
+      ]
+      [ text (toString model) ]
+  else
+    div [] []
 
 
+
+getDetails : Model -> (String, String)
+getDetails { isLeft } =
+  if isLeft then
+    ("Left", red)
+  else
+    ("Right", blue)
+
+
+onResize : Attribute Msg
+onResize =
+  on "resize" (Json.succeed GetWindowSize)
+
+
+onMouseMove : Attribute Msg
 onMouseMove =
   on "mousemove" (Json.map SetMousePosition Mouse.position)
+
+
+blue : String
+blue = "#6C7EC7"
+
+
+red : String
+red = "#FFA27B"
 
 
 -- slightly easier tuples
