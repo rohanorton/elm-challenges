@@ -2,9 +2,7 @@ module Main exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (style)
-import Html.Events exposing (on)
 import Html.App as Html
-import Json.Decode as Json
 import Mouse exposing (Position)
 import Window exposing (Size)
 import Task
@@ -77,7 +75,10 @@ isLeft { position, windowSize } =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-  Window.resizes SetWindowSize
+  Sub.batch
+    [ Window.resizes SetWindowSize
+    , Mouse.moves SetMousePosition
+    ]
 
 
 -- View
@@ -88,8 +89,7 @@ view model =
   let (centreText, color) = getDetails model
   in
     body
-      [ onMouseMove
-      , style
+      [ style
         [ "background-color" => color
         , "display" => "flex"
         , "align-items" => "center"
@@ -129,11 +129,6 @@ getDetails { isLeft } =
     ("Left", red)
   else
     ("Right", blue)
-
-
-onMouseMove : Attribute Msg
-onMouseMove =
-  on "mousemove" (Json.map SetMousePosition Mouse.position)
 
 
 blue : String
