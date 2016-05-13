@@ -26,15 +26,14 @@ main =
 
 
 type alias Model =
-  { isLeft : Bool
-  , position : Position
+  { mousePosition : Position
   , windowSize : Size
   }
 
 
 init : (Model, Cmd Msg)
 init =
-    ( Model True (Position 0 0) (Size 0 0)
+    ( Model (Position 0 0) (Size 0 0)
     , Task.perform Fail SetWindowSize Window.size
     )
 
@@ -52,22 +51,15 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     SetMousePosition xy ->
-      ({ model | position = xy
-      , isLeft = isLeft model
-      }, Cmd.none)
+      ( { model | mousePosition = xy }
+      , Cmd.none )
 
     SetWindowSize size ->
-          ({ model | windowSize = size
-          , isLeft = isLeft model
-          }, Cmd.none)
+      ( { model | windowSize = size }
+      , Cmd.none )
 
     Fail () ->
-      (model, Cmd.none)
-
-
-isLeft : Model -> Bool
-isLeft { position, windowSize } =
-  (windowSize.width // 2) - position.x > 0
+      ( model, Cmd.none )
 
 
 -- Subscriptions
@@ -86,7 +78,10 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-  let (centreText, color) = getDetails model
+  let
+      { windowSize, mousePosition } = model
+      isLeft = windowSize.width // 2 - mousePosition.x > 0
+      (centreText, color) = getDetails isLeft
   in
     body
       [ style
@@ -110,11 +105,15 @@ view model =
 debugger : Model -> Html msg
 debugger model =
   if debug then
-    p
+    div
       [ style
-        [ "color" => "#AAA"
+        [ "background-color" => "#000"
+        , "color" => "#CCC"
         , "font-family" => "Sans-Serif"
         , "position" => "fixed"
+        , "padding" => "5px"
+        , "left" => "0"
+        , "top" => "0"
         ]
       ]
       [ text (toString model) ]
@@ -123,8 +122,8 @@ debugger model =
 
 
 
-getDetails : Model -> (String, String)
-getDetails { isLeft } =
+getDetails : Bool -> (String, String)
+getDetails isLeft =
   if isLeft then
     ("Left", red)
   else
