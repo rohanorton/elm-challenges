@@ -7,6 +7,11 @@ import Time exposing (Time, second)
 import Random
 import Window exposing (Size)
 import Task
+import Debugger exposing (debugger)
+
+
+debug : Bool
+debug = False
 
 
 main : Program Never
@@ -94,10 +99,10 @@ subscriptions model =
 
 
 view : Model -> Html Msg
-view { circles } =
+view ({ circles } as model) =
   body
     []
-    (List.map circle circles)
+    ((debugger model debug) :: (List.map circle circles))
 
 
 circle : Circle -> Html msg

@@ -6,6 +6,7 @@ import Html.App as Html
 import Mouse exposing (Position)
 import Window exposing (Size)
 import Task
+import Debugger exposing (debugger)
 
 
 debug : Bool
@@ -98,27 +99,11 @@ view model =
            ]
          ]
          [ text centreText ]
-       , debugger model
+       , debugger model debug
        ]
 
 
-debugger : Model -> Html msg
-debugger model =
-  if debug then
-    div
-      [ style
-        [ "background-color" => "#000"
-        , "color" => "#CCC"
-        , "font-family" => "Sans-Serif"
-        , "position" => "fixed"
-        , "padding" => "5px"
-        , "left" => "0"
-        , "top" => "0"
-        ]
-      ]
-      [ text (toString model) ]
-  else
-    div [] []
+
 
 
 
