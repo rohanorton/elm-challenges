@@ -5,6 +5,8 @@ import Html.Attributes exposing (style)
 import Html.App as Html
 import Time exposing (Time, second)
 import Random
+import Window exposing (Size)
+import Task
 
 
 main : Program Never
@@ -21,7 +23,9 @@ main =
 
 
 type alias Model =
-  List Circle
+  { circles : List Circle
+  , windowSize : Size
+  }
 
 
 type alias Circle =
@@ -38,14 +42,17 @@ type alias Position =
 
 init : (Model, Cmd Msg)
 init =
-    ([], Cmd.none)
-
+    ({ circles = [], windowSize = Size 0 0 }
+    , Task.perform Fail SetWindowSize Window.size
+    )
 
 -- Update
 
 type Msg
   = AddCircle (List Int)
   | GenerateRandom Float
+  | SetWindowSize Size
+  | Fail ()
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -56,13 +63,22 @@ update msg model =
 
     AddCircle (rand1 :: rand2 :: rand3 :: rand4 :: []) ->
       let
-          newCircle = { position = (Position (rand1 * 7) (rand2 * 3)), size =
-            (rand3), color =
-            "cornflowerblue" }
+          newCircle =
+            { position =
+              { x = rand1 * model.windowSize.width // 100 - 100
+              , y = rand2 * model.windowSize.height // 100 - 100
+              }
+            , size = rand3 * 2
+            , color = "cornflowerblue"
+            }
       in
-          (newCircle :: model , Cmd.none)
+          ({ model | circles = newCircle :: model.circles } , Cmd.none)
 
-    AddCircle _ ->
+    SetWindowSize size ->
+      ( { model | windowSize = size }
+      , Cmd.none )
+
+    _ ->
       (model, Cmd.none)
 
 
@@ -78,12 +94,10 @@ subscriptions model =
 
 
 view : Model -> Html Msg
-view model =
-  let mycircle = circle { position = (Position 12 39), color = "blue", size = 25 }
-  in
+view { circles } =
   body
     []
-    (List.map circle model)
+    (List.map circle circles)
 
 
 circle : Circle -> Html msg
