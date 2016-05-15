@@ -57,7 +57,7 @@ init =
 -- Update
 
 type Msg
-  = AddCircle (List Int)
+  = AddCircle (Int, Int, Int, Int)
   | GenerateRandom Float
   | SetWindowSize Size
   | OnKey Char
@@ -66,24 +66,30 @@ type Msg
   | Fail ()
 
 
+randomInt : Random.Generator Int
+randomInt = Random.int 1 100
+
+
+quadTuple : a -> b -> c -> d -> (a, b, c, d)
+quadTuple w x y z =
+  (w, x, y, z)
+
+
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     GenerateRandom float ->
-      (model, Random.generate AddCircle (Random.list 4 (Random.int 1 100)))
+      ( model
+      , Random.generate AddCircle (Random.map4 quadTuple randomInt randomInt randomInt randomInt) )
 
-    AddCircle random ->
-      case random of
-        [ w, x, y, z ] ->
-          if model.paused then
-            (model, Cmd.none)
-          else
-            let
-                newCircle = createCircle model.windowSize w x y z
-            in
-                ({ model | circles = newCircle :: model.circles } , Cmd.none)
-        _ ->
-          Debug.crash "AddCircle expects array of length 4"
+    AddCircle (w, x, y, z) ->
+      if model.paused then
+        (model, Cmd.none)
+      else
+        let
+            newCircle = createCircle model.windowSize w x y z
+        in
+            ({ model | circles = newCircle :: model.circles } , Cmd.none)
 
     SetWindowSize size ->
       ( { model | windowSize = size }
@@ -117,8 +123,6 @@ createCircle { width, height } int1 int2 int3 int4 =
       , size = int3 * 2
       , color = "rebeccapurple"
   }
-
-
 
 
 -- Subscriptions
