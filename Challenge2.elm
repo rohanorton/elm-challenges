@@ -66,26 +66,33 @@ update msg model =
     GenerateRandom float ->
       (model, Random.generate AddCircle (Random.list 4 (Random.int 1 100)))
 
-    AddCircle (rand1 :: rand2 :: rand3 :: rand4 :: []) ->
-      let
-          newCircle =
-            { position =
-              { x = rand1 * model.windowSize.width // 100 - 100
-              , y = rand2 * model.windowSize.height // 100 - 100
-              }
-            , size = rand3 * 2
-            , color = "cornflowerblue"
-            }
-      in
-          ({ model | circles = newCircle :: model.circles } , Cmd.none)
+    AddCircle random ->
+      case random of
+        [ w, x, y, z ] ->
+          let
+              newCircle = createCircle model.windowSize w x y z
+          in
+              ({ model | circles = newCircle :: model.circles } , Cmd.none)
+        _ ->
+          Debug.crash "AddCircle expects array of length 4"
 
     SetWindowSize size ->
       ( { model | windowSize = size }
       , Cmd.none )
 
-    _ ->
+    Fail () ->
       (model, Cmd.none)
 
+
+createCircle : Size -> Int -> Int -> Int -> Int -> Circle
+createCircle { width, height } int1 int2 int3 int4 =
+  { position =
+    { x = int1 * width // 100 - 100
+    , y = int2 * height // 100 - 100
+    }
+      , size = int3 * 2
+      , color = "cornflowerblue"
+  }
 
 -- Subscriptions
 
