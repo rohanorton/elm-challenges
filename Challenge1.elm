@@ -51,12 +51,10 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     SetMousePosition xy ->
-      ( { model | mousePosition = xy }
-      , Cmd.none )
+      { model | mousePosition = xy } ! []
 
     SetWindowSize size ->
-      ( { model | windowSize = size }
-      , Cmd.none )
+      { model | windowSize = size } ! []
 
     NoOp ->
       model ! []

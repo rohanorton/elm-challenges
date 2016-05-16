@@ -78,8 +78,8 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     GenerateRandom float ->
-      ( model
-      , Random.generate AddCircle (Random.map4 quadTuple randomInt randomInt randomInt randomInt) )
+      model !
+        [ Random.generate AddCircle (Random.map4 quadTuple randomInt randomInt randomInt randomInt) ]
 
     AddCircle (w, x, y, z) ->
       if model.paused then
@@ -88,17 +88,16 @@ update msg model =
         let
             newCircle = createCircle model.windowSize w x y z
         in
-            ({ model | circles = newCircle :: model.circles } , Cmd.none)
+            { model | circles = newCircle :: model.circles } ! []
 
     SetWindowSize size ->
-      ( { model | windowSize = size }
-      , Cmd.none )
+      { model | windowSize = size } ! []
 
     Pause ->
-      ( { model | paused = not model.paused } , Cmd.none )
+      { model | paused = not model.paused } ! []
 
     Reset ->
-      ( { model | circles = [] } , Cmd.none )
+      { model | circles = [] } ! []
 
     OnKey key ->
       case key of
