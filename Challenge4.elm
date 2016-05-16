@@ -68,10 +68,7 @@ update msg model =
             model ! [ getGithubUser model.username ]
 
         FetchFail err ->
-            { model
-                | user = User "" ""
-            }
-                ! []
+            { model | user = User "" "" } ! []
 
         FetchSucceed ( name, avatarUrl ) ->
             { model
@@ -112,12 +109,19 @@ subscriptions model =
 
 
 view : Model -> Html Msg
-view model =
+view { user } =
+    div []
+        [ renderForm
+        , renderUser user
+        ]
+
+
+renderForm : Html Msg
+renderForm =
     div []
         [ label [] [ text "Github Username: " ]
         , input [ onInput SetUsername ] []
         , button [ onClick Submit ] [ text "Submit" ]
-        , renderUser model.user
         ]
 
 
