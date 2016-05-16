@@ -15,49 +15,52 @@ debug = False
 
 main : Program Never
 main =
-  Html.program
-    { init = init
-    , view = view
-    , update = update
-    , subscriptions = subscriptions
-    }
+    Html.program
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        }
+
 
 
 -- Model
 
 
 type alias Model =
-  { mousePosition : Position
-  , windowSize : Size
-  }
+    { mousePosition : Position
+    , windowSize : Size
+    }
 
 
-init : (Model, Cmd Msg)
+init : ( Model, Cmd Msg )
 init =
-    Model (Position 0 0) (Size 0 0) !
-      [ Task.perform (always NoOp) SetWindowSize Window.size ]
+    Model (Position 0 0) (Size 0 0)
+        ! [ Task.perform (always NoOp) SetWindowSize Window.size ]
+
 
 
 -- Update
 
 
 type Msg
-  = SetMousePosition Position
-  | SetWindowSize Size
-  | NoOp
+    = SetMousePosition Position
+    | SetWindowSize Size
+    | NoOp
 
 
-update : Msg -> Model -> (Model, Cmd Msg)
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-  case msg of
-    SetMousePosition xy ->
-      { model | mousePosition = xy } ! []
+    case msg of
+        SetMousePosition xy ->
+            { model | mousePosition = xy } ! []
 
-    SetWindowSize size ->
-      { model | windowSize = size } ! []
+        SetWindowSize size ->
+            { model | windowSize = size } ! []
 
-    NoOp ->
-      model ! []
+        NoOp ->
+            model ! []
+
 
 
 -- Subscriptions
@@ -65,10 +68,11 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-  Sub.batch
-    [ Window.resizes SetWindowSize
-    , Mouse.moves SetMousePosition
-    ]
+    Sub.batch
+        [ Window.resizes SetWindowSize
+        , Mouse.moves SetMousePosition
+        ]
+
 
 
 -- View
@@ -76,50 +80,57 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-  let
-      { windowSize, mousePosition } = model
-      isLeft = windowSize.width // 2 - mousePosition.x > 0
-      (centreText, color) = getDetails isLeft
-  in
-    body
-      [ style
-        [ "background-color" => color
-        , "display" => "flex"
-        , "align-items" => "center"
-        , "justify-content" => "center"
-        ]
-      ]
-      [ h1
-         [ style
-           [ "color" => "#AAA"
-           , "font-family" => "Sans-Serif"
-           ]
-         ]
-         [ text centreText ]
-       , debugger model debug
-       ]
+    let
+        { windowSize, mousePosition } =
+            model
+
+        isLeft =
+            windowSize.width // 2 - mousePosition.x > 0
+
+        ( centreText, color ) =
+            getDetails isLeft
+    in
+        body
+            [ style
+                [ "background-color" => color
+                , "display" => "flex"
+                , "align-items" => "center"
+                , "justify-content" => "center"
+                ]
+            ]
+            [ h1
+                [ style
+                    [ "color" => "#AAA"
+                    , "font-family" => "Sans-Serif"
+                    ]
+                ]
+                [ text centreText ]
+            , debugger model debug
+            ]
 
 
-
-
-
-
-getDetails : Bool -> (String, String)
+getDetails : Bool -> ( String, String )
 getDetails isLeft =
-  if isLeft then
-    ("Left", red)
-  else
-    ("Right", blue)
+    if isLeft then
+        ( "Left", red )
+    else
+        ( "Right", blue )
 
 
 blue : String
-blue = "#6C7EC7"
+blue =
+    "#6C7EC7"
 
 
 red : String
-red = "#FFA27B"
+red =
+    "#FFA27B"
+
 
 
 -- slightly easier tuples
-(=>) : a -> b -> (a, b)
-(=>) = (,)
+
+
+(=>) : a -> b -> ( a, b )
+(=>) =
+    (,)
