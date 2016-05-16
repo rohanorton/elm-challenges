@@ -45,11 +45,12 @@ type alias Position =
   , y : Int
   }
 
+
 init : (Model, Cmd Msg)
 init =
-    ({ circles = [], windowSize = Size 0 0 }
-    , Task.perform Fail SetWindowSize Window.size
-    )
+    { circles = [], windowSize = Size 0 0 } !
+    [ Task.perform (always NoOp) SetWindowSize Window.size ]
+
 
 -- Update
 
@@ -57,7 +58,7 @@ type Msg
   = AddCircle (Int, Int, Int, Int)
   | GenerateRandom Float
   | SetWindowSize Size
-  | Fail ()
+  | NoOp
 
 
 randomInt : Random.Generator Int
@@ -86,8 +87,8 @@ update msg model =
       ( { model | windowSize = size }
       , Cmd.none )
 
-    Fail () ->
-      (model, Cmd.none)
+    NoOp ->
+      model ! []
 
 
 createCircle : Size -> Int -> Int -> Int -> Int -> Circle

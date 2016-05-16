@@ -50,9 +50,8 @@ type alias Position =
 
 init : (Model, Cmd Msg)
 init =
-    ({ circles = [], windowSize = Size 0 0, paused = False }
-    , Task.perform Fail SetWindowSize Window.size
-    )
+    { circles = [], windowSize = Size 0 0, paused = False } !
+    [ Task.perform (always NoOp) SetWindowSize Window.size ]
 
 -- Update
 
@@ -63,7 +62,7 @@ type Msg
   | OnKey Char
   | Pause
   | Reset
-  | Fail ()
+  | NoOp
 
 
 randomInt : Random.Generator Int
@@ -84,7 +83,7 @@ update msg model =
 
     AddCircle (w, x, y, z) ->
       if model.paused then
-        (model, Cmd.none)
+        update NoOp model
       else
         let
             newCircle = createCircle model.windowSize w x y z
@@ -108,10 +107,10 @@ update msg model =
         'r' ->
           update Reset model
         _ ->
-          (model, Cmd.none)
+          update NoOp model
 
-    Fail () ->
-      (model, Cmd.none)
+    NoOp ->
+      model ! []
 
 
 createCircle : Size -> Int -> Int -> Int -> Int -> Circle

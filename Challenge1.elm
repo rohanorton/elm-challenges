@@ -34,9 +34,8 @@ type alias Model =
 
 init : (Model, Cmd Msg)
 init =
-    ( Model (Position 0 0) (Size 0 0)
-    , Task.perform Fail SetWindowSize Window.size
-    )
+    Model (Position 0 0) (Size 0 0) !
+      [ Task.perform (always NoOp) SetWindowSize Window.size ]
 
 
 -- Update
@@ -45,7 +44,7 @@ init =
 type Msg
   = SetMousePosition Position
   | SetWindowSize Size
-  | Fail ()
+  | NoOp
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -59,8 +58,8 @@ update msg model =
       ( { model | windowSize = size }
       , Cmd.none )
 
-    Fail () ->
-      ( model, Cmd.none )
+    NoOp ->
+      model ! []
 
 
 -- Subscriptions
