@@ -2,7 +2,7 @@ module Main exposing (..)
 
 import Html exposing (..)
 import Html.Events exposing (onInput, onClick)
-import Html.Attributes exposing (src)
+import Html.Attributes exposing (style, src)
 import Html.App as Html
 import Http
 import Json.Decode as Json
@@ -110,7 +110,12 @@ subscriptions model =
 
 view : Model -> Html Msg
 view { user } =
-    div []
+    body
+        [ style
+            [ "font-family" => "Sans-Serif"
+            , "padding" => "20px"
+            ]
+        ]
         [ renderForm
         , renderUser user
         ]
@@ -131,3 +136,8 @@ renderUser { name, avatarUrl } =
         [ p [] [ text name ]
         , img [ src avatarUrl ] []
         ]
+
+
+(=>) : a -> b -> ( a, b )
+(=>) =
+    (,)
