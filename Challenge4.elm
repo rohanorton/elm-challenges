@@ -191,8 +191,20 @@ renderUser maybe =
         Just { name, avatarUrl } ->
             section []
                 [ h2 [] [ text name ]
-                , img [ src avatarUrl ] []
+                , renderAvatar avatarUrl
                 ]
+
+
+renderAvatar : String -> Html msg
+renderAvatar url =
+    img
+        [ src url
+        , style
+            [ "height" => "200px"
+            , "width" => "200px"
+            ]
+        ]
+        []
 
 
 (=>) : a -> b -> ( a, b )
