@@ -5,7 +5,7 @@ import Html.Events exposing (onInput, onClick)
 import Html.Attributes exposing (style, src)
 import Html.App as Html
 import Http
-import Json.Decode as Json
+import Json.Decode as Json exposing ((:=))
 import Task
 import Debugger exposing (debugger)
 
@@ -97,8 +97,8 @@ getGithubUser username =
 decodeResponse : Json.Decoder ( String, String )
 decodeResponse =
     Json.object2 (,)
-        (Json.at [ "name" ] Json.string)
-        (Json.at [ "avatar_url" ] Json.string)
+        ("name" := Json.string)
+        ("avatar_url" := Json.string)
 
 
 
