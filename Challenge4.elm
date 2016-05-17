@@ -31,7 +31,7 @@ main =
 
 type alias Model =
     { username : String
-    , user : User
+    , user : Maybe User
     }
 
 
@@ -44,7 +44,7 @@ type alias User =
 init : ( Model, Cmd Msg )
 init =
     { username = ""
-    , user = User "" ""
+    , user = Nothing
     }
         ! []
 
@@ -74,12 +74,12 @@ update msg model =
             model ! [ getGithubUser model.username ]
 
         FetchFail err ->
-            { model | user = User "" "" } ! []
+            { model | user = Nothing } ! []
 
         FetchSucceed ( name, avatarUrl ) ->
             { model
                 | username = ""
-                , user = User name avatarUrl
+                , user = Just (User name avatarUrl)
             }
                 ! []
 
@@ -137,12 +137,17 @@ renderForm =
         ]
 
 
-renderUser : User -> Html msg
-renderUser { name, avatarUrl } =
-    div []
-        [ p [] [ text name ]
-        , img [ src avatarUrl ] []
-        ]
+renderUser : Maybe User -> Html msg
+renderUser maybe =
+    case maybe of
+        Nothing ->
+            text ""
+
+        Just { name, avatarUrl } ->
+            section []
+                [ h2 [] [ text name ]
+                , img [ src avatarUrl ] []
+                ]
 
 
 (=>) : a -> b -> ( a, b )
