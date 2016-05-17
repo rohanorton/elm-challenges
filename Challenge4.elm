@@ -179,7 +179,6 @@ renderForm =
     div []
         [ label [] [ text "Github Username: " ]
         , input [ onInput SetUsername ] []
-        , button [ onClick Submit ] [ text "Submit" ]
         ]
 
 
