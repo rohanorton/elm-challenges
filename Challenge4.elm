@@ -7,6 +7,12 @@ import Html.App as Html
 import Http
 import Json.Decode as Json
 import Task
+import Debugger exposing (debugger)
+
+
+debug : Bool
+debug =
+    False
 
 
 main : Program Never
@@ -109,7 +115,7 @@ subscriptions model =
 
 
 view : Model -> Html Msg
-view { user } =
+view ({ user } as model) =
     body
         [ style
             [ "font-family" => "Sans-Serif"
@@ -118,6 +124,7 @@ view { user } =
         ]
         [ renderForm
         , renderUser user
+        , debugger model debug
         ]
 
 
