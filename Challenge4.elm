@@ -8,6 +8,9 @@ import Http
 import Json.Decode as Json exposing ((:=))
 import Task
 import Debugger exposing (debugger)
+import Time exposing (Time)
+import Task
+import Process
 
 
 debug : Bool
@@ -32,6 +35,13 @@ main =
 type alias Model =
     { username : String
     , user : Maybe User
+    , debounce : Debounce
+    }
+
+
+type alias Debounce =
+    { invocations : Int
+    , duration : Time
     }
 
 
@@ -45,6 +55,7 @@ init : ( Model, Cmd Msg )
 init =
     { username = ""
     , user = Nothing
+    , debounce = Debounce 0 (1 * Time.second)
     }
         ! []
 
@@ -59,6 +70,8 @@ type Msg
     | Submit
     | FetchSucceed ( String, String )
     | FetchFail Http.Error
+    | DebounceInvoke
+    | DebounceComplete
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -68,7 +81,7 @@ update msg model =
             model ! []
 
         SetUsername username ->
-            { model | username = username } ! []
+            { model | username = username } ! [ wrap DebounceInvoke ]
 
         Submit ->
             model ! [ getGithubUser model.username ]
@@ -82,6 +95,39 @@ update msg model =
                 , user = Just (User name avatarUrl)
             }
                 ! []
+
+        DebounceInvoke ->
+            let
+                { invocations, duration } =
+                    model.debounce
+            in
+                { model | debounce = Debounce (invocations + 1) duration }
+                    ! [ delay duration DebounceComplete ]
+
+        DebounceComplete ->
+            let
+                { invocations, duration } =
+                    model.debounce
+
+                cmds =
+                    if invocations == 1 then
+                        [ wrap Submit ]
+                    else
+                        []
+            in
+                { model | debounce = Debounce (invocations - 1) duration } ! cmds
+
+
+wrap : Msg -> Cmd Msg
+wrap msg =
+    Task.succeed ()
+        |> Task.perform (always msg) (always msg)
+
+
+delay : Time -> Msg -> Cmd Msg
+delay duration msg =
+    Process.sleep duration
+        |> Task.perform (always msg) (always msg)
 
 
 getGithubUser : String -> Cmd Msg
