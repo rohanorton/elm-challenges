@@ -192,9 +192,9 @@ wrap { board } { x, y } =
     else if board < y then
         { x = x, y = 0 }
     else if x < 0 then
-        { x = board, y = y }
+        { x = board - 1, y = y }
     else if y < 0 then
-        { x = x, y = board }
+        { x = x, y = board - 1 }
     else
         { x = x, y = y }
 
