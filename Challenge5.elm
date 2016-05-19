@@ -10,7 +10,7 @@ import Html.App as Html
 main : Program Never
 main =
     Html.program
-        { init = init
+        { init = init 0
         , view = view
         , update = update
         , subscriptions = subscriptions
@@ -28,6 +28,7 @@ type alias Model =
     , score : Int
     , leftToGrow : Int
     , grows : Int
+    , highscore : Int
     }
 
 
@@ -56,14 +57,15 @@ type alias Position =
     { x : Int, y : Int }
 
 
-init : ( Model, Cmd Msg )
-init =
+init : Int -> ( Model, Cmd Msg )
+init highscore =
     { board = 20
     , snake = Snake [ { x = 5, y = 5 }, { x = 4, y = 5 }, { x = 3, y = 5 }, { x = 2, y = 5 }, { x = 1, y = 5 } ] "green" Right Right
     , apple = Apple { x = 9, y = 5 } "red"
     , score = 0
     , leftToGrow = 0
     , grows = 3
+    , highscore = highscore
     }
         ! []
 
@@ -136,7 +138,7 @@ update msg ({ snake, apple, score } as model) =
                     List.member newHead newTail
             in
                 if collision then
-                    init
+                    init (max model.highscore score)
                 else
                     { model
                         | snake = snake'
@@ -240,7 +242,7 @@ subscriptions model =
 
 
 view : Model -> Html Msg
-view ({ score } as model) =
+view ({ score, highscore } as model) =
     div
         [ style
             [ "text-align" => "center"
@@ -261,6 +263,13 @@ view ({ score } as model) =
                 ]
             ]
             (List.map (row model) [0..model.board - 1])
+        , h2
+            [ style
+                [ "padding" => "20px"
+                , "font-family" => "monospace"
+                ]
+            ]
+            [ text <| "Highscore: " ++ toString highscore ]
         ]
 
 
