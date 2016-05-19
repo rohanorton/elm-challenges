@@ -57,6 +57,7 @@ update msg ({ snake } as model) =
                     List.head snake.body
                         |> Maybe.withDefault 0
                         |> (+) 1
+                        |> wrap model
 
                 body' =
                     newHead :: (first snake.body)
@@ -65,6 +66,14 @@ update msg ({ snake } as model) =
                     { snake | body = body' }
             in
                 { model | snake = snake' } ! []
+
+
+wrap : Model -> Int -> Int
+wrap { board } newHead =
+    if board > newHead then
+        newHead
+    else
+        0
 
 
 first : List a -> List a
