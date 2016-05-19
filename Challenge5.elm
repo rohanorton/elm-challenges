@@ -35,6 +35,7 @@ type alias Snake =
     { body : List Position
     , colour : String
     , direction : Direction
+    , nextDirection : Direction
     }
 
 
@@ -58,7 +59,7 @@ type alias Position =
 init : ( Model, Cmd Msg )
 init =
     { board = 20
-    , snake = Snake [ { x = 5, y = 5 }, { x = 4, y = 5 }, { x = 3, y = 5 }, { x = 2, y = 5 }, { x = 1, y = 5 } ] "green" Right
+    , snake = Snake [ { x = 5, y = 5 }, { x = 4, y = 5 }, { x = 3, y = 5 }, { x = 2, y = 5 }, { x = 1, y = 5 } ] "green" Right Right
     , apple = Apple { x = 9, y = 5 } "red"
     , score = 0
     , leftToGrow = 0
@@ -101,7 +102,7 @@ update msg ({ snake, apple, score } as model) =
                 newHead =
                     List.head snake.body
                         |> Maybe.withDefault { x = 0, y = 0 }
-                        |> inc snake.direction
+                        |> inc direction'
                         |> wrap model
 
                 ( snakeInit, snakeLast ) =
@@ -116,8 +117,11 @@ update msg ({ snake, apple, score } as model) =
                 body' =
                     newHead :: newTail
 
+                direction' =
+                    snake.nextDirection
+
                 snake' =
-                    { snake | body = body' }
+                    { snake | body = body', direction = direction' }
 
                 ( score', apple', leftToGrow' ) =
                     if newHead == apple.position then
@@ -151,7 +155,7 @@ movingHorizontally snake =
 turn : Direction -> Snake -> Snake
 turn direction snake =
     if turnCondition direction snake then
-        { snake | direction = direction }
+        { snake | nextDirection = direction }
     else
         snake
 
