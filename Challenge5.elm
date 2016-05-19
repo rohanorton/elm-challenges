@@ -69,20 +69,24 @@ update msg ({ snake, apple, score } as model) =
                         |> (+) 1
                         |> wrap model
 
+                ( snakeInit, snakeLast ) =
+                    (initAndLast snake.body)
+
                 body' =
-                    newHead :: (first snake.body)
+                    newHead :: snakeInit
 
                 snake' =
                     { snake | body = body' }
 
-                score' =
+                ( score', apple' ) =
                     if newHead == apple.position then
-                        score + 1
+                        ( score + 1, { apple | position = snakeLast } )
                     else
-                        score
+                        ( score, apple )
             in
                 { model
                     | snake = snake'
+                    , apple = apple'
                     , score = score'
                 }
                     ! []
@@ -96,20 +100,30 @@ wrap { board } newHead =
         0
 
 
-first : List a -> List a
-first list =
+
+{- both init and last functions are O(n) already, lets not do twice the work
+   required!
+-}
+
+
+initAndLast : List a -> ( List a, a )
+initAndLast list =
     case list of
         [] ->
-            []
+            Debug.crash "Cannot use empty list"
 
         x :: [] ->
-            []
+            ( [], x )
 
         x :: y :: [] ->
-            [ x ]
+            ( [ x ], y )
 
         x :: xs ->
-            x :: first xs
+            let
+                ( init, last ) =
+                    initAndLast xs
+            in
+                ( x :: init, last )
 
 
 
