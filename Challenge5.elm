@@ -24,6 +24,7 @@ type alias Model =
     { board : Int
     , snake : Snake
     , apple : Apple
+    , score : Int
     }
 
 
@@ -44,6 +45,7 @@ init =
     { board = 50
     , snake = Snake [ 5, 4, 3, 2, 1 ] "green"
     , apple = Apple 9 "red"
+    , score = 0
     }
         ! []
 
@@ -57,7 +59,7 @@ type Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg ({ snake } as model) =
+update msg ({ snake, apple, score } as model) =
     case msg of
         Move ->
             let
@@ -72,8 +74,18 @@ update msg ({ snake } as model) =
 
                 snake' =
                     { snake | body = body' }
+
+                score' =
+                    if newHead == apple.position then
+                        score + 1
+                    else
+                        score
             in
-                { model | snake = snake' } ! []
+                { model
+                    | snake = snake'
+                    , score = score'
+                }
+                    ! []
 
 
 wrap : Model -> Int -> Int
@@ -114,17 +126,29 @@ subscriptions model =
 
 
 view : Model -> Html Msg
-view model =
-    table
+view ({ score } as model) =
+    div
         [ style
-            [ "border" => "1px solid black"
-            , "border-collapse" => "collapse"
-            , "margin" => "auto"
-            , "margin-top" => "100px"
+            [ "text-align" => "center"
             ]
         ]
-        [ tr []
-            (List.map (cell model) [0..model.board - 1])
+        [ h1
+            [ style
+                [ "padding" => "20px"
+                , "font-family" => "monospace"
+                ]
+            ]
+            [ text <| "Score: " ++ toString score ]
+        , table
+            [ style
+                [ "border" => "1px solid black"
+                , "border-collapse" => "collapse"
+                , "margin" => "auto"
+                ]
+            ]
+            [ tr []
+                (List.map (cell model) [0..model.board - 1])
+            ]
         ]
 
 
