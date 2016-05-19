@@ -96,14 +96,20 @@ update msg ({ snake, apple, score } as model) =
                         )
                     else
                         ( score, apple, model.leftToGrow - 1 )
+
+                collision =
+                    List.member newHead newTail
             in
-                { model
-                    | snake = snake'
-                    , apple = apple'
-                    , score = score'
-                    , leftToGrow = leftToGrow'
-                }
-                    ! []
+                if collision then
+                    init
+                else
+                    { model
+                        | snake = snake'
+                        , apple = apple'
+                        , score = score'
+                        , leftToGrow = leftToGrow'
+                    }
+                        ! []
 
 
 wrap : Model -> Int -> Int
