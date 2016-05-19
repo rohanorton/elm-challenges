@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (style)
+import Time exposing (millisecond, Time)
 import Html.App as Html
 
 
@@ -44,14 +45,42 @@ init =
 
 
 type Msg
-    = NoOp
+    = Move
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update msg ({ snake } as model) =
     case msg of
-        NoOp ->
-            model ! []
+        Move ->
+            let
+                newHead =
+                    List.head snake.body
+                        |> Maybe.withDefault 0
+                        |> (+) 1
+
+                body' =
+                    newHead :: (first snake.body)
+
+                snake' =
+                    { snake | body = body' }
+            in
+                { model | snake = snake' } ! []
+
+
+first : List a -> List a
+first list =
+    case list of
+        [] ->
+            []
+
+        x :: [] ->
+            []
+
+        x :: y :: [] ->
+            [ x ]
+
+        x :: xs ->
+            x :: first xs
 
 
 
@@ -60,7 +89,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Time.every (100 * millisecond) (always Move)
 
 
 
