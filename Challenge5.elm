@@ -25,6 +25,8 @@ type alias Model =
     , snake : Snake
     , apple : Apple
     , score : Int
+    , leftToGrow : Int
+    , grows : Int
     }
 
 
@@ -46,6 +48,8 @@ init =
     , snake = Snake [ 5, 4, 3, 2, 1 ] "green"
     , apple = Apple 9 "red"
     , score = 0
+    , leftToGrow = 0
+    , grows = 3
     }
         ! []
 
@@ -72,22 +76,32 @@ update msg ({ snake, apple, score } as model) =
                 ( snakeInit, snakeLast ) =
                     (initAndLast snake.body)
 
+                newTail =
+                    if model.leftToGrow > 0 then
+                        snake.body
+                    else
+                        snakeInit
+
                 body' =
-                    newHead :: snakeInit
+                    newHead :: newTail
 
                 snake' =
                     { snake | body = body' }
 
-                ( score', apple' ) =
+                ( score', apple', leftToGrow' ) =
                     if newHead == apple.position then
-                        ( score + 1, { apple | position = snakeLast } )
+                        ( score + 1
+                        , { apple | position = snakeLast }
+                        , model.grows
+                        )
                     else
-                        ( score, apple )
+                        ( score, apple, model.leftToGrow - 1 )
             in
                 { model
                     | snake = snake'
                     , apple = apple'
                     , score = score'
+                    , leftToGrow = leftToGrow'
                 }
                     ! []
 
