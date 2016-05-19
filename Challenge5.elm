@@ -191,16 +191,23 @@ inc direction { x, y } =
 
 wrap : Model -> Position -> Position
 wrap { board } { x, y } =
-    if board < x then
-        { x = 0, y = y }
-    else if board < y then
-        { x = x, y = 0 }
-    else if x < 0 then
-        { x = board - 1, y = y }
-    else if y < 0 then
-        { x = x, y = board - 1 }
-    else
-        { x = x, y = y }
+    let
+        upper =
+            board - 1
+
+        lower =
+            0
+    in
+        if x > upper then
+            { x = lower, y = y }
+        else if y > upper then
+            { x = x, y = lower }
+        else if x < lower then
+            { x = upper, y = y }
+        else if y < lower then
+            { x = x, y = upper }
+        else
+            { x = x, y = y }
 
 
 
