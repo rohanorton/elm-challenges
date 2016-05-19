@@ -23,6 +23,7 @@ main =
 type alias Model =
     { board : Int
     , snake : Snake
+    , apple : Apple
     }
 
 
@@ -32,10 +33,17 @@ type alias Snake =
     }
 
 
+type alias Apple =
+    { position : Int
+    , colour : String
+    }
+
+
 init : ( Model, Cmd Msg )
 init =
     { board = 50
     , snake = Snake [ 5, 4, 3, 2, 1 ] "green"
+    , apple = Apple 9 "red"
     }
         ! []
 
@@ -116,19 +124,24 @@ view model =
             ]
         ]
         [ tr []
-            (List.map (cell model.snake) [0..model.board - 1])
+            (List.map (cell model) [0..model.board - 1])
         ]
 
 
-cell : Snake -> Int -> Html Msg
-cell snake index =
+cell : Model -> Int -> Html Msg
+cell { snake, apple } index =
     let
         isSnakey =
             List.member index snake.body
 
+        isAppley =
+            index == apple.position
+
         bgColour =
             if isSnakey then
                 snake.colour
+            else if isAppley then
+                apple.colour
             else
                 ""
     in
