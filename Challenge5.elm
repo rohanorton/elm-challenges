@@ -31,22 +31,26 @@ type alias Model =
 
 
 type alias Snake =
-    { body : List Int
+    { body : List Position
     , colour : String
     }
 
 
 type alias Apple =
-    { position : Int
+    { position : Position
     , colour : String
     }
 
 
+type alias Position =
+    { x : Int, y : Int }
+
+
 init : ( Model, Cmd Msg )
 init =
-    { board = 50
-    , snake = Snake [ 5, 4, 3, 2, 1 ] "green"
-    , apple = Apple 9 "red"
+    { board = 20
+    , snake = Snake [ { x = 5, y = 5 }, { x = 4, y = 5 }, { x = 3, y = 5 }, { x = 2, y = 5 }, { x = 1, y = 5 } ] "green"
+    , apple = Apple { x = 9, y = 5 } "red"
     , score = 0
     , leftToGrow = 0
     , grows = 3
@@ -69,8 +73,8 @@ update msg ({ snake, apple, score } as model) =
             let
                 newHead =
                     List.head snake.body
-                        |> Maybe.withDefault 0
-                        |> (+) 1
+                        |> Maybe.withDefault { x = 0, y = 0 }
+                        |> inc
                         |> wrap model
 
                 ( snakeInit, snakeLast ) =
@@ -112,17 +116,27 @@ update msg ({ snake, apple, score } as model) =
                         ! []
 
 
-wrap : Model -> Int -> Int
-wrap { board } newHead =
-    if board > newHead then
-        newHead
+inc : Position -> Position
+inc { x, y } =
+    { x = x + 1, y = y }
+
+
+wrap : Model -> Position -> Position
+wrap { board } { x, y } =
+    if board < x then
+        { x = 0, y = y }
+    else if board < y then
+        { x = x, y = 0 }
     else
-        0
+        { x = x, y = y }
 
 
 
 {- both init and last functions are O(n) already, lets not do twice the work
    required!
+
+    TODO: There is clearly a runtime bug in here. Need to change snake to have
+    a non-empty list type.
 -}
 
 
@@ -175,25 +189,32 @@ view ({ score } as model) =
             [ text <| "Score: " ++ toString score ]
         , table
             [ style
-                [ "border" => "1px solid black"
+                [ "border" => "2px solid black"
                 , "border-collapse" => "collapse"
                 , "margin" => "auto"
                 ]
             ]
-            [ tr []
-                (List.map (cell model) [0..model.board - 1])
-            ]
+            (List.map (row model) [0..model.board - 1])
         ]
 
 
-cell : Model -> Int -> Html Msg
-cell { snake, apple } index =
+row : Model -> Int -> Html Msg
+row model yIndex =
+    tr []
+        (List.map (cell model yIndex) [0..model.board - 1])
+
+
+cell : Model -> Int -> Int -> Html Msg
+cell { snake, apple } yIndex xIndex =
     let
+        position =
+            { x = xIndex, y = yIndex }
+
         isSnakey =
-            List.member index snake.body
+            List.member position snake.body
 
         isAppley =
-            index == apple.position
+            position == apple.position
 
         bgColour =
             if isSnakey then
@@ -205,8 +226,7 @@ cell { snake, apple } index =
     in
         td
             [ style
-                [ "border" => "1px solid black"
-                , "width" => "20px"
+                [ "width" => "20px"
                 , "height" => "20px"
                 , "background-color" => bgColour
                 ]
