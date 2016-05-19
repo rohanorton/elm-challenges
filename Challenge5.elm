@@ -3,6 +3,7 @@ module Main exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (style)
 import Time exposing (millisecond, Time)
+import Keyboard exposing (KeyCode)
 import Html.App as Html
 
 
@@ -33,6 +34,7 @@ type alias Model =
 type alias Snake =
     { body : List Position
     , colour : String
+    , direction : Direction
     }
 
 
@@ -42,6 +44,13 @@ type alias Apple =
     }
 
 
+type Direction
+    = Up
+    | Right
+    | Down
+    | Left
+
+
 type alias Position =
     { x : Int, y : Int }
 
@@ -49,7 +58,7 @@ type alias Position =
 init : ( Model, Cmd Msg )
 init =
     { board = 20
-    , snake = Snake [ { x = 5, y = 5 }, { x = 4, y = 5 }, { x = 3, y = 5 }, { x = 2, y = 5 }, { x = 1, y = 5 } ] "green"
+    , snake = Snake [ { x = 5, y = 5 }, { x = 4, y = 5 }, { x = 3, y = 5 }, { x = 2, y = 5 }, { x = 1, y = 5 } ] "green" Right
     , apple = Apple { x = 9, y = 5 } "red"
     , score = 0
     , leftToGrow = 0
@@ -64,17 +73,35 @@ init =
 
 type Msg
     = Move
+    | OnKey KeyCode
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg ({ snake, apple, score } as model) =
     case msg of
+        OnKey key ->
+            case key of
+                37 ->
+                    { model | snake = turn Left snake } ! []
+
+                38 ->
+                    { model | snake = turn Up snake } ! []
+
+                39 ->
+                    { model | snake = turn Right snake } ! []
+
+                40 ->
+                    { model | snake = turn Down snake } ! []
+
+                _ ->
+                    model ! []
+
         Move ->
             let
                 newHead =
                     List.head snake.body
                         |> Maybe.withDefault { x = 0, y = 0 }
-                        |> inc
+                        |> inc snake.direction
                         |> wrap model
 
                 ( snakeInit, snakeLast ) =
@@ -116,9 +143,46 @@ update msg ({ snake, apple, score } as model) =
                         ! []
 
 
-inc : Position -> Position
-inc { x, y } =
-    { x = x + 1, y = y }
+movingHorizontally : Snake -> Bool
+movingHorizontally snake =
+    snake.direction == Right || snake.direction == Left
+
+
+turn : Direction -> Snake -> Snake
+turn direction snake =
+    if turnCondition direction snake then
+        { snake | direction = direction }
+    else
+        snake
+
+
+turnCondition : Direction -> Snake -> Bool
+turnCondition direction snake =
+    case direction of
+        Left ->
+            not (movingHorizontally snake)
+
+        Right ->
+            not (movingHorizontally snake)
+
+        _ ->
+            movingHorizontally snake
+
+
+inc : Direction -> Position -> Position
+inc direction { x, y } =
+    case direction of
+        Right ->
+            { x = x + 1, y = y }
+
+        Left ->
+            { x = x - 1, y = y }
+
+        Up ->
+            { x = x, y = y - 1 }
+
+        Down ->
+            { x = x, y = y + 1 }
 
 
 wrap : Model -> Position -> Position
@@ -127,6 +191,10 @@ wrap { board } { x, y } =
         { x = 0, y = y }
     else if board < y then
         { x = x, y = 0 }
+    else if x < 0 then
+        { x = board, y = y }
+    else if y < 0 then
+        { x = x, y = board }
     else
         { x = x, y = y }
 
@@ -166,7 +234,10 @@ initAndLast list =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Time.every (100 * millisecond) (always Move)
+    Sub.batch
+        [ Time.every (100 * millisecond) (always Move)
+        , Keyboard.downs OnKey
+        ]
 
 
 
