@@ -21,12 +21,20 @@ main =
 
 type alias Model =
     { board : Int
+    , snake : Snake
+    }
+
+
+type alias Snake =
+    { body : List Int
+    , colour : String
     }
 
 
 init : ( Model, Cmd Msg )
 init =
     { board = 50
+    , snake = Snake [ 5, 4, 3, 2, 1 ] "green"
     }
         ! []
 
@@ -70,20 +78,31 @@ view model =
             ]
         ]
         [ tr []
-            (List.repeat model.board cell)
+            (List.map (cell model.snake) [0..model.board - 1])
         ]
 
 
-cell : Html Msg
-cell =
-    td
-        [ style
-            [ "border" => "1px solid black"
-            , "width" => "20px"
-            , "height" => "20px"
+cell : Snake -> Int -> Html Msg
+cell snake index =
+    let
+        isSnakey =
+            List.member index snake.body
+
+        bgColour =
+            if isSnakey then
+                snake.colour
+            else
+                ""
+    in
+        td
+            [ style
+                [ "border" => "1px solid black"
+                , "width" => "20px"
+                , "height" => "20px"
+                , "background-color" => bgColour
+                ]
             ]
-        ]
-        []
+            []
 
 
 (=>) : String -> String -> ( String, String )
