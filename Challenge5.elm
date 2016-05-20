@@ -246,31 +246,45 @@ view ({ score, highscore } as model) =
     div
         [ style
             [ "text-align" => "center"
+            , "font-family" => "monospace"
             ]
         ]
-        [ h1
-            [ style
-                [ "padding" => "20px"
-                , "font-family" => "monospace"
-                ]
-            ]
-            [ text <| "Score: " ++ toString score ]
-        , table
-            [ style
-                [ "border" => "2px solid black"
-                , "border-collapse" => "collapse"
-                , "margin" => "auto"
-                ]
-            ]
-            (List.map (row model) [0..model.board - 1])
-        , h2
-            [ style
-                [ "padding" => "20px"
-                , "font-family" => "monospace"
-                ]
-            ]
-            [ text <| "Highscore: " ++ toString highscore ]
+        [ scoreView score
+        , snakepitView model
+        , highscoreView highscore
         ]
+
+
+scoreView : Int -> Html Msg
+scoreView score =
+    h1
+        [ style
+            [ "padding" => "20px"
+            ]
+        ]
+        [ text <| "Score: " ++ toString score ]
+
+
+highscoreView : Int -> Html Msg
+highscoreView highscore =
+    h2
+        [ style
+            [ "padding" => "20px"
+            ]
+        ]
+        [ text <| "Highscore: " ++ toString highscore ]
+
+
+snakepitView : Model -> Html Msg
+snakepitView model =
+    table
+        [ style
+            [ "border" => "2px solid black"
+            , "border-collapse" => "collapse"
+            , "margin" => "auto"
+            ]
+        ]
+        (List.map (row model) [0..model.board - 1])
 
 
 row : Model -> Int -> Html Msg
